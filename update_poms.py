@@ -39,11 +39,19 @@ class Pom:
         self.xml = minidom.parse(path)
         self.projectNode = findChild(self.xml, 'project')
         self.versionNode = findChild(self.projectNode, 'version')
+
         self.parentNode = findChild(self.projectNode, 'parent')
         self.parentVersionNode = findChild(self.parentNode, 'version') if self.parentNode else None
+        self.parentArtifactIdNode = findChild(self.parentNode, 'artifactId') if self.parentNode else None
 
     def __eq__(self, other):
         return os.path.abspath(self.path) == os.path.abspath(other.path)
+
+    @property
+    def parentArtifactId(self):
+        if self.parentArtifactIdNode is None:
+            return None
+        return getNodeValue(self.parentArtifactIdNode)
 
     @property
     def artifactId(self):
@@ -125,5 +133,6 @@ if __name__ == '__main__':
     for child_pom in parent_pom.getChildPoms(args.children_dir).values():
         if child_pom == parent_pom:
             continue
-        child_pom.updateParentVersion(parent_pom.version)
-        child_pom.updateOriginal(backup=not args.no_backups)
+        if child_pom.parentArtifactId is not None and child_pom.parentArtifactId == parent_pom.artifactId:
+            child_pom.updateParentVersion(parent_pom.version)
+            child_pom.updateOriginal(backup=not args.no_backups)
