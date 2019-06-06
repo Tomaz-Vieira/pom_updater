@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
 	<parent>
 		<groupId>pom-embl-cba</groupId>
 		<artifactId>the_parent</artifactId>
-		<version>26.0.0</version>
+		<version>updateme</version>
 	</parent>
-
 	<artifactId>dep2</artifactId>
 	<version>1.2.3.4</version>
-
 	<name>EMBL BCA Parent Pom</name>
 	<url>https://github.com/tischi/pom-embl-cba</url>
 	<description>This POM provides a parent for EMBL-CBA projects</description>
@@ -25,7 +22,6 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-
 	<developers>
 		<developer>
 			<id>tischi</id>
@@ -45,15 +41,12 @@
 			<name>TODO</name>
 		</contributor>
 	</contributors>
-
 	<mailingLists>
 		<mailingList>
 			<name>ImageJ Forum</name>
 			<archive>http://forum.imagej.net/</archive>
 		</mailingList>
 	</mailingLists>
-
-
 	<scm>
 		<connection>scm:git:git://github.com/tischi/pom-embl-cba</connection>
 		<developerConnection>scm:git:git@github.com/tischi/pom-embl-cba</developerConnection>
@@ -67,13 +60,10 @@
 	<ciManagement>
 		<system>None</system>
 	</ciManagement>
-
 	<properties>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>EMBL</license.copyrightOwners>
 		<fiji-plugin-plateViewer.version>==DYNAMIC_VERSION==</fiji-plugin-plateViewer.version>
 		<bdv-utils.version>==DYNAMIC_VERSION==</bdv-utils.version>
 	</properties>
-
 </project>
-
