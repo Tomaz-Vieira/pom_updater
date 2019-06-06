@@ -8,7 +8,10 @@ def findChildren(parentNode, tagName):
     return [nd for nd in parentNode.childNodes if hasattr(nd, 'tagName') and nd.tagName == tagName]
 
 def findChild(parentNode, tagName):
-    return findChildren(parentNode, tagName)[0]
+    try:
+        return findChildren(parentNode, tagName)[0]
+    except IndexError:
+        return None
 
 def findChildrenBySuffix(parentNode, suffix):
     return [nd for nd in parentNode.childNodes if hasattr(nd, 'tagName') and nd.tagName.endswith(suffix)]
@@ -37,7 +40,7 @@ class Pom:
         self.projectNode = findChild(self.xml, 'project')
         self.versionNode = findChild(self.projectNode, 'version')
         self.parentNode = findChild(self.projectNode, 'parent')
-        self.parentVersionNode = findChild(self.parentNode, 'version')
+        self.parentVersionNode = findChild(self.parentNode, 'version') if self.parentNode else None
 
     def __eq__(self, other):
         return os.path.abspath(self.path) == os.path.abspath(other.path)
