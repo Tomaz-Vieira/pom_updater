@@ -45,7 +45,7 @@ class Pom:
             if depName in pom_dict:
                 depNode.firstChild.nodeValue = pom_dict[depName].version
             else:
-                print(f"Could not find pom for dependency '{depName}' in directory '{projectsDir}'", file=sys.stderr)
+                print(f"WARNING: Could not find pom for dependency '{depName}' in directory '{projectsDir}'", file=sys.stderr)
 
         return self.xml.toprettyxml(encoding='UTF-8')
 
