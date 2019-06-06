@@ -105,8 +105,8 @@ class Pom:
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description="Update project pom's")
-    parser.add_argument('--parent-path', help='The path to the parent pom.xml file')
-    parser.add_argument('--children-dir', help='Path to directory containing the child pom.xml files')
+    parser.add_argument('--parent-path', required=True, help='The path to the parent pom.xml file')
+    parser.add_argument('--children-dir', required=True, help='Path to directory containing the child pom.xml files')
     args = parser.parse_args()
 
     parent_pom = Pom(args.parent_path)
