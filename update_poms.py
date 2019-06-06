@@ -29,6 +29,7 @@ def setNodeValue(node, value):
     node.firstChild.nodeValue = value
 
 class Pom:
+    DEPENDENCY_PROPERTY_SUFFIX='.version.auto'
     @classmethod
     def getPomsFromDir(cls, projectsDir:str):
         pomPaths = subprocess.check_output(['find', projectsDir, '-iname', 'pom.xml'], universal_newlines=True).splitlines()
@@ -58,10 +59,10 @@ class Pom:
         return getChildValue(self.projectNode, 'artifactId')
 
     def updateOriginal(self, backup=True):
-        print(f"INFO: Overwriting file {self.path}", file=sys.stderr)
         if backup:
             print(f"INFO: Creating backup at {self.path}.bak", file=sys.stderr)
             copyfile(self.path, self.path + '.bak')
+        print(f"INFO: Overwriting file {self.path}", file=sys.stderr)
         xml_file = open(self.path, 'w')
         xml_file.write(str(self))
         xml_file.close()
@@ -76,11 +77,11 @@ class Pom:
     def getDependencyNodes(self):
         dependencyNodes = []
         for propertiesNode in self.getPropertiesNodes():
-            dependencyNodes += findChildrenBySuffix(propertiesNode, '.version')
+            dependencyNodes += findChildrenBySuffix(propertiesNode, self.DEPENDENCY_PROPERTY_SUFFIX)
         return dependencyNodes
 
     def getDependencyNames(self):
-        return [nd.tagName.replace('.version', '') for nd in self.getDependencyNodes()]
+        return [nd.tagName.replace(self.DEPENDENCY_PROPERTY_SUFFIX, '') for nd in self.getDependencyNodes()]
 
     def __repr__(self):
         return f"<Pom {self.artifactId} {self.version}>"
@@ -92,9 +93,11 @@ class Pom:
     def updateDependencyVersions(self, projectsDir:str):
         child_poms = self.getChildPoms(projectsDir)
         for depNode in self.getDependencyNodes():
-            depName = depNode.tagName.replace('.version', '')
+            depName = depNode.tagName.replace(self.DEPENDENCY_PROPERTY_SUFFIX, '')
             if depName in child_poms:
-                setNodeValue(depNode, child_poms[depName].version)
+                childVersion = child_poms[depName].version
+                print(f'DEBUG: In "{self.artifactId}": will update dependency version of "{depName}" to "{childVersion}"', file=sys.stderr)
+                setNodeValue(depNode, childVersion)
             else:
                 print(f"WARNING: Could not find pom for dependency '{depName}' in directory '{projectsDir}'", file=sys.stderr)
 
@@ -104,6 +107,7 @@ class Pom:
         setNodeValue(self.versionNode, '.'.join((str(comp) for comp in version_components)))
 
     def updateParentVersion(self, parentVersion):
+        print(f'DEBUG: In "{self.artifactId}": will update parent version to "{parentVersion}"', file=sys.stderr)
         setNodeValue(self.parentVersionNode, parentVersion)
 
     def __str__(self):
@@ -119,10 +123,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Update project pom's")
     parser.add_argument('--parent-path', required=True, help='The path to the parent pom.xml file')
     parser.add_argument('--children-dir', required=True, help='Path to directory containing the child pom.xml files')
+    parser.add_argument('--dependency-suffix', default=Pom.DEPENDENCY_PROPERTY_SUFFIX, help='The suffix used in the properties that specify dependncies')
     parser.add_argument('--no-backups', action='store_true', help="Do not create .bak files when overriting the pom's")
     parser.add_argument('--no-version-bump', action='store_true', help="Do not bump parent pom's version")
     args = parser.parse_args()
-    print(args)
+    Pom.DEPENDENCY_PROPERTY_SUFFIX = args.dependency_suffix
 
     parent_pom = Pom(args.parent_path)
     parent_pom.updateDependencyVersions(args.children_dir)
@@ -133,7 +138,7 @@ if __name__ == '__main__':
     for child_pom in parent_pom.getChildPoms(args.children_dir).values():
         if child_pom == parent_pom:
             continue
-        #print(f"Child artifact: {child_pom.artifactId}  child.parent.artifactid: {child_pom.parentArtifactId}  parent id: {parent_pom.artifactId}")
+        #print(f"Child artifact: {child_pom.artifactId}  child.parent.artifactId: {child_pom.parentArtifactId}  parent id: {parent_pom.artifactId}")
         if child_pom.parentArtifactId is not None and child_pom.parentArtifactId == parent_pom.artifactId:
             child_pom.updateParentVersion(parent_pom.version)
             child_pom.updateOriginal(backup=not args.no_backups)

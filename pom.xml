@@ -63,9 +63,10 @@
 	<properties>
 		<license.licenseName>bsd_2</license.licenseName>
 		<license.copyrightOwners>EMBL</license.copyrightOwners>
-		<dep1.version>updateme</dep1.version>
-		<dep2.version>updateme</dep2.version>
-		<dep_but_with_other_parent.version>updateme</dep_but_with_other_parent.version>
-		<missing-test-dep.version>whatever</missing-test-dep.version>
+		<dep1.version.auto>updateme</dep1.version.auto>
+		<dep2.version.auto>updateme</dep2.version.auto>
+		<dep_but_with_other_parent.version.auto>updateme</dep_but_with_other_parent.version.auto>
+		<missing-test-dep.version.auto>whatever</missing-test-dep.version.auto>
+		<unchanged.version>whatever</unchanged.version>
 	</properties>
 </project>
