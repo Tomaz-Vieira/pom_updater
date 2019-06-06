@@ -58,7 +58,7 @@ class Pom:
         return getChildValue(self.projectNode, 'artifactId')
 
     def updateOriginal(self, backup=True):
-        print(f"WARNING: Overwriting file {self.path}", file=sys.stderr)
+        print(f"INFO: Overwriting file {self.path}", file=sys.stderr)
         if backup:
             print(f"INFO: Creating backup at {self.path}.bak", file=sys.stderr)
             copyfile(self.path, self.path + '.bak')
@@ -133,6 +133,7 @@ if __name__ == '__main__':
     for child_pom in parent_pom.getChildPoms(args.children_dir).values():
         if child_pom == parent_pom:
             continue
+        #print(f"Child artifact: {child_pom.artifactId}  child.parent.artifactid: {child_pom.parentArtifactId}  parent id: {parent_pom.artifactId}")
         if child_pom.parentArtifactId is not None and child_pom.parentArtifactId == parent_pom.artifactId:
             child_pom.updateParentVersion(parent_pom.version)
             child_pom.updateOriginal(backup=not args.no_backups)
