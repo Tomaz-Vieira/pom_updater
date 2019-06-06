@@ -96,9 +96,16 @@ class Pom:
 
 
 if __name__ == '__main__':
-    pom = Pom(sys.argv[1])
-    pom.updateDependencyVersions(sys.argv[2])
-    print(pom)
+    import argparse
+    parser = argparse.ArgumentParser(description="Update project pom's")
+    parser.add_argument('--parent-path', help='The path to the parent pom.xml file')
+    parser.add_argument('--children-dir', help='Path to directory containing the child pom.xml files')
+    args = parser.parse_args()
+    print(args)
+
+    parent_pom = Pom(args.parent_path)
+    parent_pom.updateDependencyVersions(args.children_dir)
+    print(parent_pom)
 
 
 
