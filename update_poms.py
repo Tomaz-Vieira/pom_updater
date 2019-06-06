@@ -127,7 +127,7 @@ if __name__ == '__main__':
     parent_pom = Pom(args.parent_path)
     parent_pom.updateDependencyVersions(args.children_dir)
     if not args.no_version_bump:
-        self.bumpVersion()
+        parent_pom.bumpVersion()
     parent_pom.updateOriginal(backup=not args.no_backups)
 
     for child_pom in parent_pom.getChildPoms(args.children_dir).values():
