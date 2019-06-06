@@ -46,9 +46,11 @@ class Pom:
     def artifactId(self):
         return getChildValue(self.projectNode, 'artifactId')
 
-    def updateOriginal(self):
+    def updateOriginal(self, backup=True):
         print(f"WARNING: Overwriting file {self.path}", file=sys.stderr)
-        copyfile(self.path, self.path + '.bak')
+        if backup:
+            print(f"INFO: Creating backup at {self.path}.bak", file=sys.stderr)
+            copyfile(self.path, self.path + '.bak')
         xml_file = open(self.path, 'w')
         xml_file.write(str(self))
         xml_file.close()
@@ -84,7 +86,6 @@ class Pom:
                 setNodeValue(depNode, child_poms[depName].version)
             else:
                 print(f"WARNING: Could not find pom for dependency '{depName}' in directory '{projectsDir}'", file=sys.stderr)
-        self.bumpVersion()
 
     def bumpVersion(self):
         version_components = [int(comp) for comp in self.version.split('.')]
@@ -107,14 +108,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Update project pom's")
     parser.add_argument('--parent-path', required=True, help='The path to the parent pom.xml file')
     parser.add_argument('--children-dir', required=True, help='Path to directory containing the child pom.xml files')
+    parser.add_argument('--no-backups', action='store_true', help="Do not create .bak files when overriting the pom's")
+    parser.add_argument('--no-version-bump', action='store_true', help="Do not bump parent pom's version")
     args = parser.parse_args()
+    print(args)
 
     parent_pom = Pom(args.parent_path)
     parent_pom.updateDependencyVersions(args.children_dir)
-    parent_pom.updateOriginal()
+    if not args.no_version_bump:
+        self.bumpVersion()
+    parent_pom.updateOriginal(backup=not args.no_backups)
 
     for child_pom in parent_pom.getChildPoms(args.children_dir).values():
         if child_pom == parent_pom:
             continue
         child_pom.updateParentVersion(parent_pom.version)
-        child_pom.updateOriginal()
+        child_pom.updateOriginal(backup=not args.no_backups)
