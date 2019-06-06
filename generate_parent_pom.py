@@ -2,6 +2,7 @@ import subprocess
 import xml.dom.minidom as minidom
 import os
 import sys
+from shutil import copyfile
 
 def findChildren(parentNode, tagName):
     return [nd for nd in parentNode.childNodes if hasattr(nd, 'tagName') and nd.tagName == tagName]
@@ -45,8 +46,12 @@ class Pom:
     def artifactId(self):
         return getChildValue(self.projectNode, 'artifactId')
 
-    def update_original(self):
-        pass
+    def updateOriginal(self):
+        print(f"WARNING: Overwriting file {self.path}", file=sys.stderr)
+        copyfile(self.path, self.path + '.bak')
+        xml_file = open(self.path, 'w')
+        xml_file.write(str(self))
+        xml_file.close()
 
     @property
     def version(self):
@@ -67,19 +72,21 @@ class Pom:
     def __repr__(self):
         return f"<Pom {self.artifactId} {self.version}>"
 
+    def getChildPoms(self, childrenDirectory:str):
+        poms = self.getPomsFromDir(childrenDirectory)
+        return {pom.artifactId:pom for pom in poms if pom.artifactId in self.getDependencyNames()}
+
     def updateDependencyVersions(self, projectsDir:str):
-        poms = self.getPomsFromDir(projectsDir)
-        pom_dict = {p.artifactId:p for p in poms}
+        child_poms = self.getChildPoms(projectsDir)
         for depNode in self.getDependencyNodes():
             depName = depNode.tagName.replace('.version', '')
-            if depName in pom_dict:
-                depNode.firstChild.nodeValue = pom_dict[depName].version
+            if depName in child_poms:
+                setNodeValue(depNode, child_poms[depName].version)
             else:
                 print(f"WARNING: Could not find pom for dependency '{depName}' in directory '{projectsDir}'", file=sys.stderr)
         self.bumpVersion()
 
     def bumpVersion(self):
-        print(f"this is version::::::::::::::::: {self.version}")
         version_components = [int(comp) for comp in self.version.split('.')]
         version_components[-1] += 1
         setNodeValue(self.versionNode, '.'.join((str(comp) for comp in version_components)))
@@ -101,11 +108,13 @@ if __name__ == '__main__':
     parser.add_argument('--parent-path', help='The path to the parent pom.xml file')
     parser.add_argument('--children-dir', help='Path to directory containing the child pom.xml files')
     args = parser.parse_args()
-    print(args)
 
     parent_pom = Pom(args.parent_path)
     parent_pom.updateDependencyVersions(args.children_dir)
-    print(parent_pom)
+    parent_pom.updateOriginal()
 
-
-
+    for child_pom in parent_pom.getChildPoms(args.children_dir).values():
+        if child_pom == parent_pom:
+            continue
+        child_pom.updateParentVersion(parent_pom.version)
+        child_pom.updateOriginal()
